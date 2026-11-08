@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Huellas de Esperanza</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pino: #1f5c4a;
+    --pino-oscuro: #153f33;
+    --menta: #e9f2ee;
+    --papel: #fbfcfb;
+    --tinta: #1b2a26;
+    --gris: #5c6b66;
+    --linea: #d3dfd9;
+    --mostaza: #f0b43c;
+    --coral: #c8452a;
+    --radio: 14px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Nunito Sans", system-ui, sans-serif;
+    color: var(--tinta);
+    background: var(--papel);
+    line-height: 1.5;
+  }
+  h1, h2, h3 { font-family: "Bricolage Grotesque", "Nunito Sans", sans-serif; line-height: 1.15; margin: 0; }
+  :focus-visible { outline: 3px solid var(--mostaza); outline-offset: 2px; }
+
+  header {
+    background: var(--pino);
+    color: #fff;
+    padding: 2.5rem 1.25rem 0;
+  }
+  .cabecera { max-width: 1100px; margin: 0 auto; }
+  header h1 { font-size: clamp(2rem, 5vw, 3.4rem); font-weight: 800; max-width: 16ch; }
+  header p { margin: .75rem 0 1.5rem; max-width: 52ch; color: #d6e6de; font-size: 1.05rem; }
+  nav { display: flex; gap: .25rem; }
+  nav button {
+    font: inherit; font-weight: 700; cursor: pointer;
+    background: transparent; color: #cfe2d9; border: 0;
+    padding: .7rem 1.2rem; border-radius: 10px 10px 0 0;
+  }
+  nav button[aria-pressed="true"] { background: var(--papel); color: var(--pino-oscuro); }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 1.75rem 1.25rem 4rem; }
+  section[hidden] { display: none; }
+
+  .filtros { display: flex; flex-wrap: wrap; gap: .75rem; align-items: end; margin-bottom: 1.5rem; }
+  label { display: grid; gap: .3rem; font-weight: 700; font-size: .9rem; }
+  input, select, textarea {
+    font: inherit; padding: .6rem .75rem; border: 1px solid var(--linea);
+    border-radius: 10px; background: #fff; color: var(--tinta); width: 100%;
+  }
+  textarea { resize: vertical; min-height: 5rem; }
+  .filtros label { min-width: 11rem; }
+
+  .btn {
+    font: inherit; font-weight: 700; cursor: pointer; border: 0;
+    padding: .65rem 1.1rem; border-radius: 10px;
+    background: var(--pino); color: #fff;
+  }
+  .btn:hover { background: var(--pino-oscuro); }
+  .btn:disabled { background: var(--linea); color: var(--gris); cursor: not-allowed; }
+  .btn.sec { background: transparent; color: var(--pino-oscuro); border: 1px solid var(--linea); }
+  .btn.sec:hover { background: var(--menta); }
+  .btn.rojo { background: var(--coral); }
+  .btn.chico { padding: .4rem .8rem; font-size: .9rem; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.25rem; }
+  .card { border: 1px solid var(--linea); border-radius: var(--radio); overflow: hidden; background: #fff; display: flex; flex-direction: column; }
+  .foto {
+    aspect-ratio: 4 / 3; display: grid; place-items: center;
+    background: hsl(var(--h) 38% 86%);
+  }
+  .foto img { width: 100%; height: 100%; object-fit: cover; }
+  .foto span { font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: 4rem; color: hsl(var(--h) 40% 30%); }
+  .cuerpo { padding: 1rem; display: grid; gap: .5rem; flex: 1; align-content: start; }
+  .cuerpo h3 { font-size: 1.35rem; }
+  .meta { margin: 0; color: var(--gris); font-size: .95rem; }
+  .desc { margin: 0; font-size: .95rem; }
+  .cuerpo .btn { margin-top: .5rem; }
+
+  .badge { display: inline-block; width: fit-content; font-size: .8rem; font-weight: 700; padding: .15rem .6rem; border-radius: 99px; }
+  .badge.disponible, .badge.aprobada { background: #d5ecdf; color: #12503a; }
+  .badge.en_proceso, .badge.pendiente { background: #fbe9bf; color: #6b4b00; }
+  .badge.adoptada, .badge.rechazada { background: #eadcd8; color: #6e2a1b; }
+
+  .vacio { color: var(--gris); padding: 2rem 0; }
+
+  .panel { display: grid; gap: 2.5rem; }
+  .panel h2 { font-size: 1.6rem; margin-bottom: 1rem; }
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+  .form-grid .ancho { grid-column: 1 / -1; }
+  .tabla-wrap { overflow-x: auto; border: 1px solid var(--linea); border-radius: var(--radio); }
+  table { border-collapse: collapse; width: 100%; min-width: 700px; }
+  th, td { text-align: left; padding: .7rem .9rem; border-bottom: 1px solid var(--linea); vertical-align: top; }
+  th { background: var(--menta); font-size: .9rem; }
+  tr:last-child td { border-bottom: 0; }
+  td .acciones { display: flex; gap: .4rem; }
+  .motivo { color: var(--gris); font-size: .9rem; max-width: 28ch; }
+
+  dialog { border: 0; border-radius: var(--radio); padding: 0; width: min(520px, 92vw); }
+  dialog::backdrop { background: rgb(21 63 51 / .55); }
+  dialog form { padding: 1.5rem; display: grid; gap: 1rem; }
+  dialog h2 { font-size: 1.5rem; }
+  .error { background: #f6dcd5; color: #6e2a1b; padding: .6rem .8rem; border-radius: 10px; font-weight: 600; }
+  .error[hidden] { display: none; }
+  .fila-botones { display: flex; gap: .6rem; justify-content: flex-end; }
+
+  #toast {
+    position: fixed; left: 50%; bottom: 1.25rem; transform: translateX(-50%);
+    background: var(--pino-oscuro); color: #fff; padding: .75rem 1.2rem;
+    border-radius: 10px; font-weight: 600; max-width: 90vw;
+    opacity: 0; pointer-events: none;
+  }
+  #toast.show { opacity: 1; }
+  #toast.mal { background: var(--coral); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cabecera">
+    <h1>Un hogar nuevo para cada huella</h1>
+    <p>Fundación Huellas de Esperanza. Mira quién espera familia y pide adoptar en un par de minutos.</p>
+    <nav aria-label="Secciones">
+      <button type="button" data-vista="catalogo" aria-pressed="true">Mascotas</button>
+      <button type="button" data-vista="panel" aria-pressed="false">Panel de la fundación</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- Catálogo público -->
+  <section id="catalogo">
+    <div class="filtros">
+      <label>Estado
+        <select id="f-estado">
+          <option value="">Todos</option>
+          <option value="disponible" selected>Disponibles</option>
+          <option value="en_proceso">En proceso</option>
+          <option value="adoptada">Adoptadas</option>
+        </select>
+      </label>
+      <label>Especie
+        <select id="f-especie">
+          <option value="">Todas</option>
+          <option value="perro">Perros</option>
+          <option value="gato">Gatos</option>
+          <option value="otro">Otras</option>
+        </select>
+      </label>
+    </div>
+    <div id="grid" class="grid" aria-live="polite"></div>
+  </section>
+
+  <!-- Panel de la fundación -->
+  <section id="panel" hidden>
+    <div class="panel">
+      <div>
+        <h2>Agregar mascota</h2>
+        <form id="form-mascota" class="form-grid">
+          <label>Nombre <input name="nombre" required maxlength="80"></label>
+          <label>Especie
+            <select name="especie" required>
+              <option value="perro">Perro</option>
+              <option value="gato">Gato</option>
+              <option value="otro">Otro</option>
+            </select>
+          </label>
+          <label>Raza <input name="raza" maxlength="80"></label>
+          <label>Edad en meses <input name="edad_meses" type="number" min="0" max="360" required></label>
+          <label class="ancho">Descripción <textarea name="descripcion"></textarea></label>
+          <label class="ancho">URL de la foto (opcional) <input name="foto_url" type="url"></label>
+          <div class="ancho"><button class="btn" type="submit">Guardar mascota</button></div>
+        </form>
+      </div>
+
+      <div>
+        <h2>Solicitudes de adopción</h2>
+        <div class="filtros">
+          <label>Estado
+            <select id="f-solicitud">
+              <option value="">Todas</option>
+              <option value="pendiente" selected>Pendientes</option>
+              <option value="aprobada">Aprobadas</option>
+              <option value="rechazada">Rechazadas</option>
+            </select>
+          </label>
+        </div>
+        <div class="tabla-wrap">
+          <table>
+            <thead>
+              <tr><th>#</th><th>Mascota</th><th>Solicitante</th><th>Motivo</th><th>Estado</th><th>Decisión</th></tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Formulario de solicitud -->
+<dialog id="dlg">
+  <form id="form-solicitud" method="dialog">
+    <h2 id="dlg-titulo">Quiero adoptar</h2>
+    <div id="dlg-error" class="error" role="alert" hidden></div>
+    <label>Tu nombre <input name="nombre_solicitante" required minlength="2" maxlength="120"></label>
+    <label>Correo <input name="correo" type="email" required></label>
+    <label>Teléfono <input name="telefono" type="tel" maxlength="30"></label>
+    <label>Cuéntanos por qué quieres adoptar <textarea name="motivo" maxlength="1000"></textarea></label>
+    <div class="fila-botones">
+      <button type="button" class="btn sec" id="dlg-cancelar">Cancelar</button>
+      <button type="submit" class="btn" id="dlg-enviar">Enviar solicitud</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+  // Cambia estas dos URLs por las de Render cuando despliegues las APIs.
+  const MASCOTAS_API = "http://localhost:8001";
+  const ADOPCIONES_API = "http://localhost:8002";
+
+  const $ = (s) => document.querySelector(s);
+  const esc = (t) => String(t ?? "").replace(/[&<>"']/g, (c) => (
+    { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+  ));
+  const ETIQUETA = { disponible: "Disponible", en_proceso: "En proceso", adoptada: "Adoptada",
+                     pendiente: "Pendiente", aprobada: "Aprobada", rechazada: "Rechazada" };
+
+  let mascotaElegida = null;
+
+  async function api(base, ruta, opciones = {}) {
+    let r;
+    try {
+      r = await fetch(base + ruta, { headers: { "Content-Type": "application/json" }, ...opciones });
+    } catch {
+      throw new Error("No se pudo conectar con el servidor. Revisa que la API esté encendida.");
+    }
+    let datos = null;
+    try { datos = await r.json(); } catch { /* respuesta sin cuerpo */ }
+    if (!r.ok) {
+      const d = datos && datos.detail;
+      const msg = typeof d === "string" ? d
+        : Array.isArray(d) ? d.map((x) => x.msg).join(". ")
+        : "Error " + r.status;
+      throw new Error(msg);
+    }
+    return datos;
+  }
+
+  function avisar(texto, tipo = "ok") {
+    const t = $("#toast");
+    t.textContent = texto;
+    t.className = "show " + (tipo === "mal" ? "mal" : "");
+    clearTimeout(avisar.id);
+    avisar.id = setTimeout(() => { t.className = ""; }, 4500);
+  }
+
+  function edad(meses) {
+    if (meses < 12) return meses + (meses === 1 ? " mes" : " meses");
+    const a = Math.floor(meses / 12), m = meses % 12;
+    const años = a + (a === 1 ? " año" : " años");
+    return m ? años + " y " + m + (m === 1 ? " mes" : " meses") : años;
+  }
+
+  // ---------- Catálogo ----------
+  async function cargarCatalogo() {
+    const q = new URLSearchParams();
+    if ($("#f-estado").value) q.set("estado", $("#f-estado").value);
+    if ($("#f-especie").value) q.set("especie", $("#f-especie").value);
+    const grid = $("#grid");
+    let lista;
+    try {
+      lista = await api(MASCOTAS_API, "/mascotas" + (q.toString() ? "?" + q : ""));
+    } catch (e) {
+      grid.innerHTML = '<p class="vacio">No se pudo cargar el catálogo. ' + esc(e.message) + "</p>";
+      return;
+    }
+    if (!lista.length) {
+      grid.innerHTML = '<p class="vacio">No hay mascotas con esos filtros.</p>';
+      return;
+    }
+    grid.innerHTML = lista.map((m) => {
+      const foto = m.foto_url
+        ? '<img src="' + esc(m.foto_url) + '" alt="Foto de ' + esc(m.nombre) + '">'
+        : "<span>" + esc(m.nombre.charAt(0).toUpperCase()) + "</span>";
+      const datos = [m.especie, m.raza, edad(m.edad_meses)].filter(Boolean).join(", ");
+      const libre = m.estado === "disponible";
+      return '<article class="card">' +
+        '<div class="foto" style="--h:' + ((m.id * 67) % 360) + '">' + foto + "</div>" +
+        '<div class="cuerpo">' +
+          "<h3>" + esc(m.nombre) + "</h3>" +
+          '<span class="badge ' + m.estado + '">' + ETIQUETA[m.estado] + "</span>" +
+          '<p class="meta">' + esc(datos) + "</p>" +
+          (m.descripcion ? '<p class="desc">' + esc(m.descripcion) + "</p>" : "") +
+          '<button class="btn" data-adoptar="' + m.id + '" data-nombre="' + esc(m.nombre) + '"' +
+            (libre ? "" : " disabled") + ">" + (libre ? "Quiero adoptar" : "No disponible") + "</button>" +
+        "</div></article>";
+    }).join("");
+  }
+
+  $("#grid").addEventListener("click", (ev) => {
+    const b = ev.target.closest("[data-adoptar]");
+    if (!b) return;
+    mascotaElegida = Number(b.dataset.adoptar);
+    $("#dlg-titulo").textContent = "Quiero adoptar a " + b.dataset.nombre;
+    $("#dlg-error").hidden = true;
+    $("#form-solicitud").reset();
+    $("#dlg").showModal();
+  });
+  $("#dlg-cancelar").addEventListener("click", () => $("#dlg").close());
+
+  $("#form-solicitud").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const datos = Object.fromEntries(new FormData(ev.target));
+    datos.mascota_id = mascotaElegida;
+    if (!datos.telefono) delete datos.telefono;
+    if (!datos.motivo) delete datos.motivo;
+    const boton = $("#dlg-enviar");
+    boton.disabled = true;
+    try {
+      await api(ADOPCIONES_API, "/solicitudes", { method: "POST", body: JSON.stringify(datos) });
+      $("#dlg").close();
+      avisar("Solicitud enviada. La fundación se comunicará contigo.");
+      cargarCatalogo();
+    } catch (e) {
+      const caja = $("#dlg-error");
+      caja.textContent = e.message;
+      caja.hidden = false;
+      cargarCatalogo();
+    } finally {
+      boton.disabled = false;
+    }
+  });
+
+  // ---------- Panel ----------
+  async function cargarSolicitudes() {
+    const tbody = $("#tbody");
+    const q = $("#f-solicitud").value;
+    let sols, mascotas;
+    try {
+      [sols, mascotas] = await Promise.all([
+        api(ADOPCIONES_API, "/solicitudes" + (q ? "?estado=" + q : "")),
+        api(MASCOTAS_API, "/mascotas"),
+      ]);
+    } catch (e) {
+      tbody.innerHTML = '<tr><td colspan="6">No se pudieron cargar las solicitudes. ' + esc(e.message) + "</td></tr>";
+      return;
+    }
+    const nombres = Object.fromEntries(mascotas.map((m) => [m.id, m.nombre]));
+    if (!sols.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="vacio">No hay solicitudes en este estado.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = sols.map((s) => {
+      const acciones = s.estado === "pendiente"
+        ? '<div class="acciones">' +
+            '<button class="btn chico" data-accion="aprobar" data-id="' + s.id + '">Aprobar</button>' +
+            '<button class="btn chico rojo" data-accion="rechazar" data-id="' + s.id + '">Rechazar</button>' +
+          "</div>"
+        : "";
+      return "<tr>" +
+        "<td>" + s.id + "</td>" +
+        "<td>" + esc(nombres[s.mascota_id] || "Mascota " + s.mascota_id) + "</td>" +
+        "<td>" + esc(s.nombre_solicitante) + "<br><small>" + esc(s.correo) +
+          (s.telefono ? ", " + esc(s.telefono) : "") + "</small></td>" +
+        '<td class="motivo">' + esc(s.motivo || "Sin motivo") + "</td>" +
+        '<td><span class="badge ' + s.estado + '">' + ETIQUETA[s.estado] + "</span></td>" +
+        "<td>" + acciones + "</td></tr>";
+    }).join("");
+  }
+
+  $("#tbody").addEventListener("click", async (ev) => {
+    const b = ev.target.closest("[data-accion]");
+    if (!b) return;
+    b.disabled = true;
+    try {
+      await api(ADOPCIONES_API, "/solicitudes/" + b.dataset.id + "/" + b.dataset.accion, { method: "PATCH" });
+      avisar(b.dataset.accion === "aprobar" ? "Solicitud aprobada. La mascota quedó como adoptada." : "Solicitud rechazada.");
+    } catch (e) {
+      avisar(e.message, "mal");
+    }
+    cargarSolicitudes();
+    cargarCatalogo();
+  });
+
+  $("#form-mascota").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const datos = Object.fromEntries(new FormData(ev.target));
+    datos.edad_meses = Number(datos.edad_meses);
+    ["raza", "descripcion", "foto_url"].forEach((k) => { if (!datos[k]) delete datos[k]; });
+    try {
+      await api(MASCOTAS_API, "/mascotas", { method: "POST", body: JSON.stringify(datos) });
+      ev.target.reset();
+      avisar("Mascota guardada.");
+      cargarCatalogo();
+    } catch (e) {
+      avisar(e.message, "mal");
+    }
+  });
+
+  // ---------- Navegación ----------
+  document.querySelectorAll("nav button").forEach((b) => {
+    b.addEventListener("click", () => {
+      document.querySelectorAll("nav button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+      $("#catalogo").hidden = b.dataset.vista !== "catalogo";
+      $("#panel").hidden = b.dataset.vista !== "panel";
+      if (b.dataset.vista === "panel") cargarSolicitudes(); else cargarCatalogo();
+    });
+  });
+  $("#f-estado").addEventListener("change", cargarCatalogo);
+  $("#f-especie").addEventListener("change", cargarCatalogo);
+  $("#f-solicitud").addEventListener("change", cargarSolicitudes);
+
+  cargarCatalogo();
+</script>
+</body>
+</html>
