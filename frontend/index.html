@@ -74,10 +74,13 @@
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.25rem; }
   .card { border: 1px solid var(--linea); border-radius: var(--radio); overflow: hidden; background: #fff; display: flex; flex-direction: column; }
   .foto {
-    aspect-ratio: 4 / 3; display: grid; place-items: center;
+    aspect-ratio: 4 / 3; display: grid; place-items: center; position: relative; overflow: hidden;
     background: hsl(var(--h) 38% 86%);
   }
-  .foto img { width: 100%; height: 100%; object-fit: cover; }
+  .foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .ayuda { display: block; font-size: .8rem; color: var(--tinta-suave, #5c6b66); margin-top: .25rem; font-weight: 400; }
+  .previa { margin-top: .5rem; max-width: 220px; aspect-ratio: 4 / 3; border-radius: 10px; overflow: hidden; background: #eef3f0; display: grid; place-items: center; font-size: .8rem; color: #5c6b66; }
+  .previa img { width: 100%; height: 100%; object-fit: cover; }
   .foto span { font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: 4rem; color: hsl(var(--h) 40% 30%); }
   .cuerpo { padding: 1rem; display: grid; gap: .5rem; flex: 1; align-content: start; }
   .cuerpo h3 { font-size: 1.35rem; }
@@ -176,7 +179,10 @@
           <label>Raza <input name="raza" maxlength="80"></label>
           <label>Edad en meses <input name="edad_meses" type="number" min="0" max="360" required></label>
           <label class="ancho">Descripción <textarea name="descripcion"></textarea></label>
-          <label class="ancho">URL de la foto (opcional) <input name="foto_url" type="url"></label>
+          <label class="ancho">URL de la foto (opcional) <input name="foto_url" type="url" placeholder="https://…/foto.jpg">
+            <span class="ayuda">Debe ser el enlace de la imagen, no de la página: en la foto, clic derecho → «Copiar dirección de la imagen».</span>
+            <div class="previa" id="previa-foto" hidden></div>
+          </label>
           <div class="ancho"><button class="btn" type="submit">Guardar mascota</button></div>
         </form>
       </div>
@@ -290,9 +296,10 @@
       return;
     }
     grid.innerHTML = lista.map((m) => {
+      const inicial = "<span>" + esc(m.nombre.charAt(0).toUpperCase()) + "</span>";
       const foto = m.foto_url
-        ? '<img src="' + esc(m.foto_url) + '" alt="Foto de ' + esc(m.nombre) + '">'
-        : "<span>" + esc(m.nombre.charAt(0).toUpperCase()) + "</span>";
+        ? inicial + '<img src="' + esc(m.foto_url) + '" alt="Foto de ' + esc(m.nombre) + '" loading="lazy" onerror="this.remove()">'
+        : inicial;
       const datos = [m.especie, m.raza, edad(m.edad_meses)].filter(Boolean).join(", ");
       const libre = m.estado === "disponible";
       return '<article class="card">' +
@@ -396,15 +403,46 @@
   $("#form-mascota").addEventListener("submit", async (ev) => {
     ev.preventDefault();
     const datos = Object.fromEntries(new FormData(ev.target));
+    Object.keys(datos).forEach((k) => { if (typeof datos[k] === "string") datos[k] = datos[k].trim(); });
     datos.edad_meses = Number(datos.edad_meses);
     ["raza", "descripcion", "foto_url"].forEach((k) => { if (!datos[k]) delete datos[k]; });
+    if (datos.foto_url && !(await esImagen(datos.foto_url))) {
+      avisar("Ese enlace no abre una imagen. En la foto, clic derecho → «Copiar dirección de la imagen» y pega ese enlace.", "mal");
+      return;
+    }
     try {
       await api(MASCOTAS_API, "/mascotas", { method: "POST", body: JSON.stringify(datos) });
       ev.target.reset();
+      $("#previa-foto").hidden = true;
       avisar("Mascota guardada.");
       cargarCatalogo();
     } catch (e) {
       avisar(e.message, "mal");
+    }
+  });
+
+  // Comprueba que el enlace realmente abra una imagen (no una página web).
+  function esImagen(url) {
+    return new Promise((resolver) => {
+      const img = new Image();
+      const limite = setTimeout(() => resolver(false), 8000);
+      img.onload = () => { clearTimeout(limite); resolver(img.naturalWidth > 0); };
+      img.onerror = () => { clearTimeout(limite); resolver(false); };
+      img.src = url;
+    });
+  }
+
+  $("#form-mascota [name=foto_url]").addEventListener("change", async (ev) => {
+    const url = ev.target.value.trim();
+    const previa = $("#previa-foto");
+    if (!url) { previa.hidden = true; return; }
+    previa.hidden = false;
+    previa.textContent = "Revisando la imagen…";
+    if (await esImagen(url)) {
+      previa.innerHTML = '<img alt="Vista previa de la foto">';
+      previa.querySelector("img").src = url;
+    } else {
+      previa.textContent = "Ese enlace no abre una imagen.";
     }
   });
 
